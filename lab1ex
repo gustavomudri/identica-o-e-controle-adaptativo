@@ -1,0 +1,52 @@
+function [K, tau, L] = lab1ex(y, A, fs, metodo)
+
+    K = y(end) / A;
+
+    Ts = 1 / fs;
+    N = numel(y);
+    tempo = (0:N-1) * Ts;
+
+
+    if strcmp(metodo, "ziegler")
+        yp = diff(y) / Ts;
+        [ypmax, indexmax] = max(yp);
+        ti = indexmax * Ts;
+        tf = find(abs(y - y(end)) <= y(end) * 0.02, 1, 'first') * Ts;
+        L = ti;
+        tau = (tf - ti) / 4;
+
+    elseif strcmp(metodo, 'sundaresan')
+        t1 = find(abs(y - y(end)) <= y(end) * (1 - 0.353), 1, 'first') * Ts;
+        t2 = find(abs(y - y(end)) <= y(end) * (1 - 0.853), 1, 'first') * Ts;
+        L = 1.3 * t1 - 0.29 * t2;
+        tau = 0.67 * (t2 - t1);
+
+    elseif strcmp(metodo, 'nishkiwa')
+
+  
+    A0=trapz([1:N],y(end)-y)*Ts
+    t0 = A0/(y(end)-y(1))
+    A1 = trapz(tempo(tempo <= t0), y(tempo <= t0) - y(1));
+
+    tau = A1 / (0.368 * (y(end) - y(1)));
+    L = t0 - tau
+
+    elseif strcmp(metodo, 'smith')
+        t1 = find(abs(y - y(end)) <= y(end) * (1 - 0.283), 1, 'first') * Ts;
+        t2 = find(abs(y - y(end)) <= y(end) * (1 - 0.632), 1, 'first') * Ts;
+        tau = 1.5 * (t2 - t1);
+        L = t2 - tau;
+
+    elseif strcmp(metodo, 'hagglund')
+        ta = find(abs(y - y(end)) <= y(end) * (1 - 0.632), 1, 'first') * Ts;
+        indexta = round(ta / Ts);
+        ti = (y(indexta) - y(1)) / (y(end) - y(1)) * Ts;
+        tau = ta - ti;
+        L = ti;
+
+    else
+        error('Método não reconhecido.');
+    end
+
+
+end
